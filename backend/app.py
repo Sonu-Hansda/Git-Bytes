@@ -1,59 +1,84 @@
-from flask import Flask
-from flask import request, jsonify
-from scanners import check_headers, check_ssl, check_csrf
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from scanners import (
+    check_headers, 
+    check_ssl, 
+    check_csrf,
+    check_xss,
+)
 import validators
 from utils import category
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/")
 def index():
-    return "Hello, World!"
+    return "CyberShield API is running."
 
-@app.route("/header-scanner", methods=["POST"])
+# Added /api prefix to all routes!
+@app.route("/api/header-scanner", methods=["POST"])
 def header_scanner():
-    url = request.json["url"]
-
+    data = request.get_json()
+    url = data.get("url", "")
     if not url or not validators.url(url):
         return jsonify({"error": "Invalid URL"}), 400
-
+    
     result = check_headers(url)
-    return result
+    return jsonify(result) # Wrapped in jsonify for safety
 
-@app.route("/ssl-scanner", methods=["POST"])
+@app.route("/api/ssl-scanner", methods=["POST"])
 def ssl_scanner():
-    url = request.json["url"]
-
+    url = request.json.get("url", "")
     if not url or not validators.url(url):
         return jsonify({"error": "Invalid URL"}), 400
 
     result = check_ssl(url)
-    return result
+    return jsonify(result)
 
-@app.route("/csrf-scanner", methods=["POST"])
+@app.route("/api/csrf-scanner", methods=["POST"])
 def csrf_scanner():
-    url = request.json["url"]
-
+    data = request.get_json()
+    url = data.get("url", "")
     if not url or not validators.url(url):
         return jsonify({"error": "Invalid URL"}), 400
 
     result = check_csrf(url)
-    return result
+    return jsonify(result)
 
-@app.route("/category", methods=["POST"])
-def category_scanner():
-    url = request.json["url"]
-
+@app.route("/api/xss-scanner", methods=["POST"])
+def xss_scanner():
+    data = request.get_json()
+    url = data.get("url", "")
     if not url or not validators.url(url):
         return jsonify({"error": "Invalid URL"}), 400
+    
+    result = check_xss(url)
+    return jsonify(result)
 
-    result = category(url)
-    return result
-
-@app.route("/sql-injection-scanner", methods=["POST"])
+# Fixed naming and logic to match React
+@app.route("/api/sql-scanner", methods=["POST"])
 def sql_injection():
-    url = request.args.get("url")
+    data = request.get_json()
+    url = data.get("url", "")
+    if not url or not validators.url(url):
+        return jsonify({"error": "Invalid URL"}), 400
+    
+    # TODO: Import and call your actual check_sql(url) function here
+    # For now, returning dummy data so React doesn't crash
+    return jsonify({"score": 10, "feedback": ["SQL scanner under construction."]})
 
+# Added placeholder for Subdomain
+@app.route("/api/subdomain-scanner", methods=["POST"])
+def subdomain_scanner():
+    # TODO: Implement actual scanner
+    return jsonify({"score": 10, "feedback": ["Subdomain scanner under construction."]})
+
+# Added placeholder for SSRF
+@app.route("/api/ssrf-scanner", methods=["POST"])
+def ssrf_scanner():
+    # TODO: Implement actual scanner
+    return jsonify({"score": 10, "feedback": ["SSRF scanner under construction."]})
 
 if __name__ == "__main__":
-    app.run(debug=True,host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5001)

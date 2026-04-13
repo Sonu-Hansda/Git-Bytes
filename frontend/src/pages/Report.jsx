@@ -414,214 +414,302 @@ import ChartSummary from "../components/ChartSummary";
 import Footer from "../components/Footer";
 import { Link, useParams } from "react-router-dom";
 import Chatbot from "../components/Chatbot";
- 
+
+// Helper: derive status label from score
+const scoreToStatus = (score) => {
+  if (score >= 8) return "safe";
+  if (score >= 5) return "warning";
+  return "danger";
+};
 
 const Report = () => {
   const { paramURL } = useParams();
   const url = paramURL ? decodeURIComponent(paramURL) : null;
+  const scanDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
-  const [csrf_load,setCSRFLoad] = useState(false);
+  // --- State for each scanner ---
+  const [headersData, setHeadersData] = useState({ feedback: [], score: null });
+  const [sslData, setSslData] = useState({ feedback: [], score: null });
+  const [csrfData, setCsrfData] = useState([]);
+  const [xssData, setXssData] = useState({ feedback: [], score: null });
+  const [sqlData, setSqlData] = useState({ feedback: [], score: null });
+  const [subdomainData, setSubdomainData] = useState({ feedback: [], score: null });
+  const [ssrfData, setSsrfData] = useState({ feedback: [], score: null });
 
-  const [missingHeaders, setMissingHeaders] = useState([]);
-  const [missingHeaderScore, setMissingHeaderScore] = useState(0);
-  const [sslFeedback, setSslFeedback] = useState([]);
-  const [sslScore, setSslScore] = useState(0);
-  const [csrf,setCsrf] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingStates, setLoadingStates] = useState({
+    headers: true, ssl: true, csrf: true,
+    xss: true, sql: true, subdomain: true, ssrf: true,
+  });
+
+  const markDone = (key) =>
+    setLoadingStates((prev) => ({ ...prev, [key]: false }));
 
   useEffect(() => {
-    console.log(url);
     if (!url) return;
-  
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setCSRFLoad(true);
-    const getMissingHeaders = async () => {
+
+    // --- Individual fetch functions ---
+    const fetchHeaders = async () => {
       try {
         const res = await fetch("/api/header-scanner", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
         });
-  
         const data = await res.json();
         const feedback = data.feedback || [];
-        setMissingHeaders(feedback);
         const score = Math.max(0, 10 - feedback.length);
-        setMissingHeaderScore(score);
-      } catch (err) {
-        console.error("Header Scanner Error:", err);
-      }
+        setHeadersData({ feedback, score });
+      } catch (e) {
+        setHeadersData({ feedback: ["Header scan failed"], score: 0 });
+      } finally { markDone("headers"); }
     };
-  
-    const getSSL = async () => {
+
+    const fetchSSL = async () => {
       try {
         const res = await fetch("/api/ssl-scanner", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
         });
-  
         const data = await res.json();
-        const sslIssues = data.feedback || [];
-        setSslFeedback(sslIssues);
-        const score = Math.max(0, 10 - sslIssues.length);
-        setSslScore(score);
-        console.log("SSL Scanner Data:", data);
-      } catch (error) {
-        console.error("SSL Scanner Error:", error);
-      }
+        const feedback = data.feedback || [];
+        const score = data.score !== undefined
+          ? data.score
+          : Math.max(0, 10 - feedback.length);
+        setSslData({ feedback, score });
+      } catch (e) {
+        setSslData({ feedback: ["SSL scan failed"], score: 0 });
+      } finally { markDone("ssl"); }
     };
 
-    const getCSRF = async () => {
+    const fetchCSRF = async () => {
       try {
         const res = await fetch("/api/csrf-scanner", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
         });
-  
         const data = await res.json();
-        setCsrf(data);
-      } catch (error) {
-        console.error("CSRF Scanner Error:", error);
-      }
+        setCsrfData(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setCsrfData(["❌ CSRF scan failed"]);
+      } finally { markDone("csrf"); }
     };
-    
-    getMissingHeaders();
-    getSSL();
-    getCSRF();
-    setCSRFLoad(false);
-  
-  }, [url]);
-  
 
+    const fetchXSS = async () => {
+      try {
+        const res = await fetch("/api/xss-scanner", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        setXssData({ feedback: data.feedback || [], score: data.score ?? 5 });
+      } catch (e) {
+        setXssData({ feedback: ["XSS scan failed"], score: 0 });
+      } finally { markDone("xss"); }
+    };
+
+    const fetchSQL = async () => {
+      try {
+        const res = await fetch("/api/sql-scanner", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        setSqlData({ feedback: data.feedback || [], score: data.score ?? 5 });
+      } catch (e) {
+        setSqlData({ feedback: ["SQL scan failed"], score: 0 });
+      } finally { markDone("sql"); }
+    };
+
+    const fetchSubdomain = async () => {
+      try {
+        const res = await fetch("/api/subdomain-scanner", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        setSubdomainData({ feedback: data.feedback || [], score: data.score ?? 9 });
+      } catch (e) {
+        setSubdomainData({ feedback: ["Subdomain scan failed"], score: 9 });
+      } finally { markDone("subdomain"); }
+    };
+
+    const fetchSSRF = async () => {
+      try {
+        const res = await fetch("/api/ssrf-scanner", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        setSsrfData({ feedback: data.feedback || [], score: data.score ?? 8 });
+      } catch (e) {
+        setSsrfData({ feedback: ["SSRF scan failed"], score: 8 });
+      } finally { markDone("ssrf"); }
+    };
+
+    Promise.all([
+      fetchHeaders(), fetchSSL(), fetchCSRF(),
+      fetchXSS(), fetchSQL(), fetchSubdomain(), fetchSSRF(),
+    ]).finally(() => setLoading(false));
+
+  }, [url]);
+
+  // Derive CSRF score from result strings
+  const csrfScore = csrfData.length > 0 && csrfData[0]?.includes("✔️") ? 9 : 4;
+
+  // --- Build vulnerability cards ---
   const vulnerabilities = [
     {
       title: "XSS (Cross-Site Scripting)",
-      score: 6,
+      score: xssData.score,
       icon: "code",
-      items: [
-        { text: "No reflected XSS found on contact form", status: "safe", issue: "No issues", location: "/contact" },
-        { text: "Inputs missing sanitization in signup form", status: "warning", issue: "Input validation issue", location: "/signup" },
-        { text: "Script executed on search parameter", status: "danger", issue: "Script injection", location: "/search?query=" }
-      ]
+      loading: loadingStates.xss,
+      items: xssData.feedback.map((text) => ({
+        text,
+        status: scoreToStatus(xssData.score),
+        issue: text,
+        location: "Page Source",
+      })),
     },
     {
-      title: "Missing Headers",
-      score: missingHeaderScore,
+      title: "SQL Injection",
+      score: sqlData.score,
       icon: "database",
-      items: missingHeaders.slice(1).map((text, index) => ({
+      loading: loadingStates.sql,
+      items: sqlData.feedback.map((text) => ({
+        text,
+        status: scoreToStatus(sqlData.score),
+        issue: text,
+        location: "Input Fields / URL Parameters",
+      })),
+    },
+    {
+      title: "Missing Security Headers",
+      score: headersData.score,
+      icon: "shield-alt",
+      loading: loadingStates.headers,
+      items: headersData.feedback.slice(1).map((text) => ({
         status: "warning",
         issue: text,
-        location: "HTTP Response Headers"
-      }))
+        location: "HTTP Response Headers",
+      })),
     },
     {
       title: "CSRF (Cross-Site Request Forgery)",
+      score: csrfScore,
       icon: "exchange-alt",
-      items: csrf,
+      loading: loadingStates.csrf,
+      items: csrfData,
+    },
+    {
+      title: "SSL / TLS Configuration",
+      score: sslData.score,
+      icon: "lock",
+      loading: loadingStates.ssl,
+      items: sslData.feedback.map((text) => ({
+        text,
+        status: scoreToStatus(sslData.score),
+        issue: text,
+        location: "SSL Certificate",
+      })),
     },
     {
       title: "Subdomain Takeover",
-      score: 9,
+      score: subdomainData.score,
       icon: "network-wired",
-      items: [
-        {
-          text: "No unclaimed DNS entries found",
-          status: "safe",
-          issue: "No vulnerable subdomain records",
-          location: "DNS records"
-        },
-        {
-          text: "All subdomains correctly resolve to active services",
-          status: "safe",
-          issue: "All services actively used",
-          location: "example.subdomain.com"
-        },
-        {
-          text: "No dangling CNAMEs or external services detected",
-          status: "safe",
-          issue: "No unused third-party mappings",
-          location: "DNS configuration"
-        }
-      ]
+      loading: loadingStates.subdomain,
+      items: subdomainData.feedback.map((text) => ({
+        text,
+        status: scoreToStatus(subdomainData.score),
+        issue: text,
+        location: "DNS Records",
+      })),
     },
     {
       title: "SSRF (Server-Side Request Forgery)",
-      score: 8,
-      icon: "exchange-alt",
-      items: [
-        {
-          text: "No internal IPs or localhost access detected via input fields",
-          status: "safe",
-          issue: "No SSRF vector through user input",
-          location: "/api/image-fetch"
-        },
-        {
-          text: "Strict allow-listing enforced for outbound requests",
-          status: "safe",
-          issue: "Only trusted domains allowed",
-          location: "Server-side request handling"
-        },
-        {
-          text: "Metadata URL access blocked by firewall or application logic",
-          status: "safe",
-          issue: "Instance metadata protection in place",
-          location: "AWS/GCP metadata endpoints"
-        }
-      ]
-    },
-    {
-      title: "SSL Misconfigurations",
-      score: sslScore,
-      icon: "lock",
-      items: sslFeedback.map((text, index) => ({
+      score: ssrfData.score,
+      icon: "server",
+      loading: loadingStates.ssrf,
+      items: ssrfData.feedback.map((text) => ({
         text,
-        status: "warning",
+        status: scoreToStatus(ssrfData.score),
         issue: text,
-        location: "SSL Scanner"
-      }))
-    }
+        location: "URL Parameters / Form Fields",
+      })),
+    },
   ];
 
-  const totalScore = vulnerabilities
-  .map((v) => v.score)
-  .filter((score) => typeof score === "number")
-  .reduce((sum, score) => sum + score, 0);
+  // Calculate average score from all numeric scores
+  const numericScores = vulnerabilities
+    .map((v) => v.score)
+    .filter((s) => typeof s === "number" && s !== null);
+  const avgScore =
+    numericScores.length > 0
+      ? Math.round(numericScores.reduce((a, b) => a + b, 0) / numericScores.length)
+      : 0;
 
-const avgScore = Math.round(totalScore / vulnerabilities.length);
-
+  // Chart scores object
+  const chartScores = {
+    xss: xssData.score ?? 0,
+    sql: sqlData.score ?? 0,
+    csrf: csrfScore,
+    ssl: sslData.score ?? 0,
+    headers: headersData.score ?? 0,
+    subdomain: subdomainData.score ?? 0,
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#121212] to-[#1A1A1A] text-white font-sans">
       <Navbar />
 
       <main className="container mx-auto px-6 py-8">
-        <ScanStatus />
+        <ScanStatus url={url} date={scanDate} />
         <SecurityScore score={avgScore} />
 
+        {loading && (
+          <div className="text-center py-4 mb-6">
+            <span className="text-[#00FF9D] font-mono animate-pulse text-sm">
+              ⚡ Running {Object.values(loadingStates).filter(Boolean).length} active scan(s)...
+            </span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {vulnerabilities.map((vuln, index) => (
-            <VulnerabilityCard
-              key={index}
-              title={vuln.title}
-              score={vuln.score}
-              icon={vuln.icon}
-              items={vuln.items}
-            />
+            <div key={index} className="relative">
+              {vuln.loading && (
+                <div className="absolute inset-0 bg-gray-900 bg-opacity-60 rounded-lg flex items-center justify-center z-10">
+                  <span className="text-[#00FF9D] font-mono text-sm animate-pulse">Scanning...</span>
+                </div>
+              )}
+              <VulnerabilityCard
+                title={vuln.title}
+                score={vuln.score}
+                icon={vuln.icon}
+                items={vuln.items}
+              />
+            </div>
           ))}
         </div>
 
-        <ChartSummary />
+        <ChartSummary scores={chartScores} />
 
         <div className="flex justify-center mt-8">
-          <Link to="/" className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
+          <Link
+            to="/"
+            className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center"
+          >
             <i className="fas fa-arrow-left mr-2"></i>
             Go Back to Home
           </Link>
