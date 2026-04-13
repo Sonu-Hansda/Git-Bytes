@@ -1,7 +1,7 @@
 import requests
 from utils import category
 
-LLM_SERVER = "http://localhost:8000/headers/invoke"
+LLM_SERVER = "http://10.0.15.208:8000/headers/invoke"
 
 CATEGORY_HEADERS = {
     "Blog": [

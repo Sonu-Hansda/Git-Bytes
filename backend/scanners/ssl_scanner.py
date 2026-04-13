@@ -1,7 +1,7 @@
 import requests
 from utils import category, check_ssl_validation as getSSL
 
-LLM_SERVER = "http://localhost:8000/SSL/invoke"
+LLM_SERVER = "http://10.0.15.208:8000/SSL/invoke"
 
 def check_ssl(url):
     try:
