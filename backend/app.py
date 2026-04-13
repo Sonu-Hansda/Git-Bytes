@@ -56,7 +56,6 @@ def xss_scanner():
     result = check_xss(url)
     return jsonify(result)
 
-# Fixed naming and logic to match React
 @app.route("/api/sql-scanner", methods=["POST"])
 def sql_injection():
     data = request.get_json()
