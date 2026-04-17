@@ -7,6 +7,7 @@ from .headers import add_headers_route
 from .SSL import add_ssl_route
 from .chatbot import add_chatbot_route
 from .xss import add_xss_route
+from .sql import add_sql_route
 
 __all__ = [
     'add_category_route',
@@ -14,4 +15,5 @@ __all__ = [
     'add_ssl_route',
     'add_chatbot_route',
     'add_xss_route',
+    'add_sql_route',
 ]

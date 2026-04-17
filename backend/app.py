@@ -5,6 +5,7 @@ from scanners import (
     check_ssl, 
     check_csrf,
     check_xss,
+    check_sql_injection,
 )
 import validators
 from utils import category
@@ -57,15 +58,14 @@ def xss_scanner():
     return jsonify(result)
 
 @app.route("/api/sql-scanner", methods=["POST"])
-def sql_injection():
+def sql_scanner():
     data = request.get_json()
     url = data.get("url", "")
     if not url or not validators.url(url):
         return jsonify({"error": "Invalid URL"}), 400
     
-    # TODO: Import and call your actual check_sql(url) function here
-    # For now, returning dummy data so React doesn't crash
-    return jsonify({"score": 10, "feedback": ["SQL scanner under construction."]})
+    result = check_sql_injection(url)
+    return jsonify(result)
 
 # Added placeholder for Subdomain
 @app.route("/api/subdomain-scanner", methods=["POST"])
