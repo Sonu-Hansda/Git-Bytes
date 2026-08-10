@@ -63,45 +63,5 @@ def xss_scanner():
     return jsonify(result)
 
 
-@app.route("/api/sql-scanner", methods=["POST"])
-def sql_scanner():
-    data = request.get_json()
-    url = data.get("url", "")
-    if not url or not validators.url(url):
-        return jsonify({"error": "Invalid URL"}), 400
-    
-    result = check_sql_injection(url)
-    return jsonify(result)
-
-
-@app.route("/api/subdomain-scanner", methods=["POST"])
-def subdomain_scanner():
-    data = request.get_json()
-    url = data.get("url", "")
-    if not url or not validators.url(url):
-        return jsonify({"error": "Invalid URL"}), 400
-    result = check_subdomain_takeover(url)
-    return jsonify(result)
-
-
-@app.route("/api/ssrf-scanner", methods=["POST"])
-def ssrf_scanner():
-    data = request.get_json()
-    url = data.get("url", "")
-    if not url or not validators.url(url):
-        return jsonify({"error": "Invalid URL"}), 400
-    result = check_ssrf(url)
-    return jsonify(result)
-
-
-@app.route("/category", methods=["POST"])
-def category_scanner():
-    data = request.get_json()
-    url = data.get("url", "")
-    if not url or not validators.url(url):
-        return jsonify({"error": "Invalid URL"}), 400
-    result = category(url)
-    return jsonify(result)
-
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)
