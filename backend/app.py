@@ -50,10 +50,5 @@ def category_scanner():
     result = category(url)
     return result
 
-@app.route("/sql-injection-scanner", methods=["POST"])
-def sql_injection():
-    url = request.args.get("url")
-
-
 if __name__ == "__main__":
     app.run(debug=True,host="0.0.0.0")
