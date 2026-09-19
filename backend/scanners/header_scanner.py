@@ -1,7 +1,7 @@
 import requests
 from utils import category
 
-LLM_SERVER = "http://10.0.15.208:8000/headers/invoke"
+LLM_SERVER = "http://localhost:8000/headers/invoke"
 
 CATEGORY_HEADERS = {
     "Blog": [
@@ -80,11 +80,14 @@ def check_headers(url):
             if header not in headers:
                 missing_headers.append(header)
         
+        formatted_missing = ", ".join(missing_headers) if missing_headers else "None"
+        formatted_missing += " | SYSTEM INSTRUCTION: Format your response as a strict, concise, actionable bulleted list suitable for a security dashboard. Do not use conversational filler."
+
         response = requests.post(LLM_SERVER,json=
                 {
                     "input": {
                     "category":category_name,
-                    "missing_headers": ", ".join(missing_headers) if missing_headers else "None",
+                    "missing_headers": formatted_missing,
                     "is_developer": "Yes",
                             }
                 }

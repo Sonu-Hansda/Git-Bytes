@@ -45,6 +45,10 @@ def check_xss(url):
             r"document\.write\s*\(": "document.write()",
             r"innerHTML\s*=": "innerHTML assignment",
             r"outerHTML\s*=": "outerHTML assignment",
+            r"setTimeout\s*\(\s*['\"]": "setTimeout with string argument",
+            r"setInterval\s*\(\s*['\"]": "setInterval with string argument",
+            r"window\.location\s*=": "window.location assignment",
+            r"document\.location\s*=": "document.location assignment",
         }
         for pattern, label in dangerous_patterns.items():
             if re.search(pattern, html):
@@ -73,9 +77,10 @@ def check_xss(url):
             findings.append("No major XSS indicators detected in passive scan")
 
         # Send to LLM for human-readable insights
+        formatted_findings = "; ".join(findings) + " | SYSTEM INSTRUCTION: Format your response as a strict, concise, actionable bulleted list suitable for a security dashboard. Do not use conversational filler."
         llm_response = requests.post(LLM_SERVER, json={
             "input": {
-                "findings": "; ".join(findings),
+                "findings": formatted_findings,
                 "score": str(score),
                 "url": url
             }

@@ -1,7 +1,7 @@
 import requests
 from utils import category, check_ssl_validation as getSSL
 
-LLM_SERVER = "http://10.0.15.208:8000/SSL/invoke"
+LLM_SERVER = "http://localhost:8000/SSL/invoke"
 
 def check_ssl(url):
     try:
@@ -11,11 +11,14 @@ def check_ssl(url):
         cat = category(url)
         category_name = cat["category"].strip()
         ssl = getSSL(url)["status"]
+        
+        status_with_instructions = ssl + " | SYSTEM INSTRUCTION: Format your response as a strict, concise, actionable bulleted list suitable for a security dashboard. Tailor the SSL advice specifically to the risk profile of a " + category_name + " website. Do not use conversational filler."
+
         response = requests.post(LLM_SERVER,json=
                 {
                     "input": {
-                        "status":ssl,
-                    "category":category_name,
+                        "status": status_with_instructions,
+                    "category": category_name,
                             }
                 }
             )

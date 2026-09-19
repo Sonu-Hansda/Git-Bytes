@@ -25,6 +25,10 @@ SQL_ERROR_PATTERNS = [
     r"syntax error.*sql",
     r"microsoft.*sql.*server",
     r"mssql_query",
+    r"redis error",
+    r"mongodb.*exception",
+    r"syntax error at or near",
+    r"driver.*sql",
 ]
 
 def check_sql_injection(url):
@@ -73,7 +77,7 @@ def check_sql_injection(url):
             score -= 1
 
         # Check 6: Search for common ORM/DB fingerprints in JS source
-        db_hints = re.findall(r"(sequelize|typeorm|prisma|mongoose|knex|sqlalchemy)", html_lower)
+        db_hints = re.findall(r"(sequelize|typeorm|prisma|mongoose|knex|sqlalchemy|drizzle|mikro-orm|objection|bookshelf)", html_lower)
         if db_hints:
             db_names = list(set(db_hints))
             findings.append(f"Database ORM references found in source: {', '.join(db_names)} — ensure parameterized queries are enforced")
@@ -84,9 +88,10 @@ def check_sql_injection(url):
             findings.append("No obvious SQL injection indicators detected in passive scan")
 
         # LLM for human-readable insights
+        formatted_findings = "; ".join(findings) + " | SYSTEM INSTRUCTION: Format your response as a strict, concise, actionable bulleted list suitable for a security dashboard. Do not use conversational filler."
         llm_response = requests.post(LLM_SERVER, json={
             "input": {
-                "findings": "; ".join(findings),
+                "findings": formatted_findings,
                 "score": str(score),
                 "url": url
             }
