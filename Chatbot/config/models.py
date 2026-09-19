@@ -1,3 +1,3 @@
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 
-llm = Ollama(model="mistral")
+llm = OllamaLLM(model="qwen3:1.7b")

@@ -1,4 +1,4 @@
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 prompt = ChatPromptTemplate.from_template(
     "Analyze this {category} website's SSL status ({status}): "
     "Generate exactly 3 short and crisp security insights for this status-category combination: "

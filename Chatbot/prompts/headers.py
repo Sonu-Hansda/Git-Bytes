@@ -1,4 +1,4 @@
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 prompt = ChatPromptTemplate.from_template(
     "You are analyzing a website's metadata and missing headers.\n"
     "Category: {category}\n"

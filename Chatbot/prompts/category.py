@@ -1,4 +1,4 @@
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 prompt = ChatPromptTemplate.from_template(
     "Classify the following website based on its metadata:\n"
