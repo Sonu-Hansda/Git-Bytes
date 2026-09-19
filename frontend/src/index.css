@@ -4,16 +4,54 @@
 /* @import "./node_modules/preline/variants.css"; */
 
 /* Loader.css */
-
-/* Loader.css */
 html {
   scroll-behavior: smooth;
+  font-family: 'Fira Code', monospace; /* Default mono font for hacker vibe */
 }
 
+/* Neo-Brutalism Utilities */
+.neo-border { border: 2px solid #00FF9C; }
+.neo-shadow { box-shadow: 4px 4px 0 0 #00FF9C; }
+.neo-shadow-hover:hover { 
+  box-shadow: 6px 6px 0 0 #00FF9C; 
+  transform: translate(-2px, -2px);
+}
+.neo-card {
+  background-color: #1A1A1A;
+  border: 2px solid #00FF9C;
+  box-shadow: 6px 6px 0 0 #00FF9C;
+  transition: all 0.2s ease-in-out;
+}
+.neo-btn {
+  background-color: #00FF9C;
+  color: #121212;
+  font-weight: bold;
+  font-family: 'Fira Code', monospace;
+  border: 2px solid #00FF9C;
+  box-shadow: 4px 4px 0 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease-in-out;
+  padding: 0.5rem 1rem;
+}
+.neo-btn:hover {
+  box-shadow: 6px 6px 0 0 rgba(255, 255, 255, 0.4);
+  transform: translate(-2px, -2px);
+}
+.neo-btn-outline {
+  background-color: transparent;
+  color: #00FF9C;
+  border: 2px solid #00FF9C;
+  box-shadow: 4px 4px 0 0 #00FF9C;
+  transition: all 0.2s ease-in-out;
+}
+.neo-btn-outline:hover {
+  background-color: #00FF9C;
+  color: #121212;
+  box-shadow: 6px 6px 0 0 #00FF9C;
+  transform: translate(-2px, -2px);
+}
 
-
-*{
-  scroll-behavior: "smooth";
+* {
+  scroll-behavior: smooth;
 }
 .loader-container {
   position: relative;
