@@ -406,12 +406,12 @@
 
 
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
-import ScanStatus from "../components/ScanStatus";
-import SecurityScore from "../components/SecurityScore";
-import VulnerabilityCard from "../components/VulnerabilityCard";
-import ChartSummary from "../components/ChartSummary";
-import Footer from "../components/Footer";
+import Navbar from "../components/layout/Navbar";
+import ScanStatus from "../components/report/ScanStatus";
+import SecurityScore from "../components/report/SecurityScore";
+import VulnerabilityCard from "../components/report/VulnerabilityCard";
+import ChartSummary from "../components/report/ChartSummary";
+import Footer from "../components/layout/Footer";
 import { Link, useParams } from "react-router-dom";
 import Chatbot from "../components/Chatbot";
 
@@ -670,7 +670,7 @@ const Report = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#121212] to-[#1A1A1A] text-white font-sans">
+    <div className="min-h-screen bg-[#121212] text-white font-mono selection:bg-[#00FF9C] selection:text-black">
       <Navbar />
 
       <main className="container mx-auto px-6 py-8">
@@ -705,13 +705,13 @@ const Report = () => {
 
         <ChartSummary scores={chartScores} />
 
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center mt-12 mb-8">
           <Link
             to="/"
-            className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center"
+            className="neo-btn-outline px-8 py-4 uppercase tracking-widest font-bold flex items-center"
           >
-            <i className="fas fa-arrow-left mr-2"></i>
-            Go Back to Home
+            <i className="fas fa-arrow-left mr-3"></i>
+            RETURN_TO_BASE
           </Link>
         </div>
       </main>
