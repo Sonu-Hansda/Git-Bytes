@@ -28,7 +28,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-8 pt-8 border-t-2 border-[#00FF9C] flex justify-between items-center text-sm font-bold max-w-4xl mx-auto">
-          <p className="text-gray-400">© 2026 Git Bytes. All rights reserved.</p>
+          <p className="text-gray-400">© 2026 CyberShield. All rights reserved.</p>
           <div className="text-[#00FF9C] bg-[#1A1A1A] px-2 py-1 neo-border shadow-[2px_2px_0_0_#00FF9C]">
             > STATUS: ONLINE
           </div>

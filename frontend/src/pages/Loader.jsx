@@ -47,6 +47,12 @@ const Loader = () => {
   const location = useLocation();
   const {url, vulnerabilityTypes, mode, advancedSettings} = location.state || {}
   
+  useEffect(() => {
+    if (!url) {
+      navigate('/');
+    }
+  }, [url, navigate]);
+
   const [mainIndex, setMainIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [currentWord, setCurrentWord] = useState(scanSteps[titles[0]][0]);

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 
 const ScanSetup = () => {
   const [url, setUrl] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
   const [vulnerabilityTypes, setVulnerabilityTypes] = useState({
     xss: true,
@@ -33,6 +34,11 @@ const ScanSetup = () => {
 
 const handleScan = (e) =>{
     e.preventDefault();
+    if (!url.trim()) {
+      setError('TARGET_URL IS REQUIRED FOR SCAN INITIATION.');
+      return;
+    }
+    setError('');
     navigate('/Loader', {
       state: {
         url,
@@ -56,11 +62,15 @@ const handleScan = (e) =>{
             type="url"
             id="url"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              if (error) setError('');
+            }}
             placeholder="https://..."
-            className="w-full bg-[#121212] border-2 border-[#00FF9C] py-3 pl-12 pr-4 text-white focus:outline-none focus:shadow-[4px_4px_0_0_#00FF9C] transition-all font-mono"
+            className={`w-full bg-[#121212] border-2 py-3 pl-12 pr-4 text-white focus:outline-none transition-all font-mono ${error ? 'border-red-500 focus:shadow-[4px_4px_0_0_red]' : 'border-[#00FF9C] focus:shadow-[4px_4px_0_0_#00FF9C]'}`}
           />
         </div>
+        {error && <p className="text-red-500 text-sm mt-2 font-bold animate-pulse">> ERROR: {error}</p>}
       </div>
 
       {/* Vulnerability Types */}
