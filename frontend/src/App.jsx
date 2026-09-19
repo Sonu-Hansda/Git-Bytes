@@ -15,7 +15,7 @@ function App() {
     <Router>
       {isDeployed && (
         <div className="bg-[#eab308] text-black text-center py-2 px-4 font-mono font-bold text-sm z-50 relative neo-border">
-          ⚠️ DEMO_MODE: Backend scanners are disabled in this deployed environment. To run real scans, please <a href="https://github.com/sonuhansda/Git-Bytes" target="_blank" rel="noreferrer" className="underline hover:text-white">clone the GitHub repository</a> and run locally!
+          ⚠️ DEMO_MODE: Backend scanners are disabled in this deployed environment. To run real scans, please <a href="https://github.com/Sonu-Hansda/Git-Bytes" target="_blank" rel="noreferrer" className="underline hover:text-white">clone the GitHub repository</a> and run locally!
         </div>
       )}
       <Routes>
